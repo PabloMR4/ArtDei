@@ -1,0 +1,20 @@
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/
+
+# Node modules (if using build tools in the future)
+node_modules/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Zone Identifier files from Windows
+*.Zone.Identifier
