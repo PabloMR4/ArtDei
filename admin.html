@@ -243,6 +243,43 @@
         .remove-image:hover {
             background: #c82333;
         }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: var(--spacing-lg);
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .tab-button {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            color: var(--stone-gray);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab-button:hover {
+            color: var(--deep-burgundy);
+        }
+
+        .tab-button.active {
+            color: var(--deep-burgundy);
+            border-bottom-color: var(--primary-gold);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -253,10 +290,18 @@
             <div class="admin-page-header">
                 <img src="img/logo.png" alt="ArtDei Logo" class="logo-admin">
                 <h1>Panel de Administración</h1>
-                <p style="color: var(--stone-gray); font-size: 1.1rem;">Gestiona los proyectos de ArtDei</p>
+                <p style="color: var(--stone-gray); font-size: 1.1rem;">Gestiona el contenido de ArtDei</p>
             </div>
 
-            <div class="admin-sections">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('proyectos')">📁 Proyectos</button>
+                <button class="tab-button" onclick="switchTab('noticias')">📰 Noticias</button>
+            </div>
+
+            <!-- Proyectos Tab -->
+            <div id="proyectos-tab" class="tab-content active">
+                <div class="admin-sections">
                 <!-- Add Project Section -->
                 <div class="admin-section">
                     <h2 class="section-title">➕ Agregar Nuevo Proyecto</h2>
@@ -292,11 +337,53 @@
                         </p>
                     </div>
                 </div>
+                </div>
+            </div>
+
+            <!-- Noticias Tab -->
+            <div id="noticias-tab" class="tab-content">
+                <div class="admin-sections">
+                <!-- Add News Section -->
+                <div class="admin-section">
+                    <h2 class="section-title">➕ Agregar Nueva Noticia</h2>
+                    <div class="admin-panel" style="display: block; max-width: 100%; box-shadow: none; border: none; padding: 0;">
+                        <form id="addNewsForm">
+                            <div class="form-group">
+                                <label for="newsTitle">Título de la Noticia</label>
+                                <input type="text" id="newsTitle" placeholder="Ej: Nuevo Retablo Terminado" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="newsDescription">Descripción</label>
+                                <textarea id="newsDescription" placeholder="Describe la noticia..." rows="4" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="newsImage">Imagen de la Noticia</label>
+                                <input type="file" id="newsImage" accept="image/*" required>
+                                <small>Formatos aceptados: JPG, PNG, WEBP</small>
+                            </div>
+                            <div id="newsImagePreview" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;"></div>
+                            <button type="submit" class="submit-button">
+                                <span>➕</span> Agregar Noticia
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- News List Section -->
+                <div class="admin-section">
+                    <h2 class="section-title">📋 Noticias Guardadas</h2>
+                    <div id="newsList" class="projects-list">
+                        <p style="text-align: center; color: var(--stone-gray); padding: var(--spacing-lg);">
+                            No hay noticias guardadas aún.
+                        </p>
+                    </div>
+                </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Edit Modal -->
+    <!-- Edit Project Modal -->
     <div id="editModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -330,7 +417,56 @@
         </div>
     </div>
 
+    <!-- Edit News Modal -->
+    <div id="editNewsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Noticia</h3>
+                <button class="close-modal" onclick="closeEditNewsModal()">×</button>
+            </div>
+            <form id="editNewsForm">
+                <input type="hidden" id="editNewsId">
+                <div class="form-group">
+                    <label for="editNewsTitle">Título de la Noticia</label>
+                    <input type="text" id="editNewsTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="editNewsDescription">Descripción</label>
+                    <textarea id="editNewsDescription" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Imagen Actual</label>
+                    <div id="editNewsImagePreview" class="edit-images-preview"></div>
+                </div>
+                <div class="form-group">
+                    <label for="editNewsImage">Cambiar Imagen (opcional)</label>
+                    <input type="file" id="editNewsImage" accept="image/*">
+                    <small>Deja en blanco para mantener la imagen actual</small>
+                </div>
+                <div id="newNewsImagePreview" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;"></div>
+                <button type="submit" class="submit-button">
+                    <span>💾</span> Guardar Cambios
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script>
+        // Tab System
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
         // Project Manager for Admin Page
         class AdminProjectManager {
             constructor() {
@@ -593,9 +729,231 @@
             }
         });
 
-        // Load projects on page load
+        // ==================== NEWS MANAGER ====================
+
+        class AdminNewsManager {
+            constructor() {
+                this.news = this.loadNews();
+            }
+
+            loadNews() {
+                const stored = localStorage.getItem('artdei_news');
+                return stored ? JSON.parse(stored) : [];
+            }
+
+            saveNews() {
+                localStorage.setItem('artdei_news', JSON.stringify(this.news));
+            }
+
+            addNews(title, description, imageData) {
+                const newsItem = {
+                    id: Date.now(),
+                    title,
+                    description,
+                    image: imageData,
+                    createdAt: new Date().toISOString()
+                };
+
+                this.news.push(newsItem);
+                this.saveNews();
+                return newsItem;
+            }
+
+            deleteNews(id) {
+                this.news = this.news.filter(n => n.id !== id);
+                this.saveNews();
+            }
+
+            updateNews(id, title, description, imageData) {
+                const newsIndex = this.news.findIndex(n => n.id === id);
+                if (newsIndex !== -1) {
+                    this.news[newsIndex].title = title;
+                    this.news[newsIndex].description = description;
+                    if (imageData) {
+                        this.news[newsIndex].image = imageData;
+                    }
+                    this.saveNews();
+                }
+            }
+
+            getNews(id) {
+                return this.news.find(n => n.id === id);
+            }
+        }
+
+        const adminNewsManager = new AdminNewsManager();
+
+        // Load and display saved news
+        function loadSavedNews() {
+            const newsListEl = document.getElementById('newsList');
+            const stored = localStorage.getItem('artdei_news');
+            const news = stored ? JSON.parse(stored) : [];
+
+            if (news.length === 0) {
+                newsListEl.innerHTML = '<p style="text-align: center; color: var(--stone-gray); padding: var(--spacing-lg);">No hay noticias guardadas aún.</p>';
+                return;
+            }
+
+            newsListEl.innerHTML = news.map(newsItem => {
+                return `
+                <div class="project-item" data-id="${newsItem.id}">
+                    <img src="${newsItem.image}" alt="${newsItem.title}">
+                    <div class="project-item-info">
+                        <h4>${newsItem.title}</h4>
+                        <p>${newsItem.description}</p>
+                        <small style="color: var(--primary-gold);">Creado: ${new Date(newsItem.createdAt).toLocaleDateString('es-ES')}</small>
+                    </div>
+                    <div class="project-actions">
+                        <button class="edit-btn" onclick="openEditNewsModal(${newsItem.id})">
+                            ✏️ Editar
+                        </button>
+                        <button class="delete-btn" onclick="deleteNews(${newsItem.id})">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        // Delete news function
+        function deleteNews(id) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta noticia?')) {
+                return;
+            }
+
+            adminNewsManager.deleteNews(id);
+            loadSavedNews();
+            alert('Noticia eliminada correctamente');
+        }
+
+        // News image preview
+        document.getElementById('newsImage').addEventListener('change', function(e) {
+            const previewContainer = document.getElementById('newsImagePreview');
+            previewContainer.innerHTML = '';
+
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.style.width = '100px';
+                    img.style.height = '100px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '6px';
+                    img.style.border = '2px solid var(--primary-gold)';
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Add News Form Handler
+        document.getElementById('addNewsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('newsTitle').value;
+            const description = document.getElementById('newsDescription').value;
+            const imageFile = document.getElementById('newsImage').files[0];
+
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    adminNewsManager.addNews(title, description, event.target.result);
+                    document.getElementById('addNewsForm').reset();
+                    document.getElementById('newsImagePreview').innerHTML = '';
+                    loadSavedNews();
+                    alert('Noticia agregada exitosamente');
+                };
+                reader.readAsDataURL(imageFile);
+            }
+        });
+
+        // Edit News Modal Functions
+        let currentEditNewsImage = null;
+
+        function openEditNewsModal(id) {
+            const newsItem = adminNewsManager.getNews(id);
+            if (!newsItem) return;
+
+            document.getElementById('editNewsId').value = newsItem.id;
+            document.getElementById('editNewsTitle').value = newsItem.title;
+            document.getElementById('editNewsDescription').value = newsItem.description;
+
+            currentEditNewsImage = newsItem.image;
+            const container = document.getElementById('editNewsImagePreview');
+            container.innerHTML = `<div class="edit-image-item"><img src="${newsItem.image}" alt="${newsItem.title}"></div>`;
+
+            document.getElementById('editNewsModal').classList.add('active');
+        }
+
+        function closeEditNewsModal() {
+            document.getElementById('editNewsModal').classList.remove('active');
+            document.getElementById('editNewsForm').reset();
+            document.getElementById('newNewsImagePreview').innerHTML = '';
+            currentEditNewsImage = null;
+        }
+
+        // Preview new image in edit news modal
+        document.getElementById('editNewsImage').addEventListener('change', function(e) {
+            const previewContainer = document.getElementById('newNewsImagePreview');
+            previewContainer.innerHTML = '';
+
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = document.createElement('img');
+                    img.src = event.target.result;
+                    img.style.width = '80px';
+                    img.style.height = '80px';
+                    img.style.objectFit = 'cover';
+                    img.style.borderRadius = '6px';
+                    img.style.border = '2px solid var(--primary-gold)';
+                    previewContainer.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Edit News Form Handler
+        document.getElementById('editNewsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const id = parseInt(document.getElementById('editNewsId').value);
+            const title = document.getElementById('editNewsTitle').value;
+            const description = document.getElementById('editNewsDescription').value;
+            const newImageFile = document.getElementById('editNewsImage').files[0];
+
+            if (newImageFile) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    adminNewsManager.updateNews(id, title, description, event.target.result);
+                    closeEditNewsModal();
+                    loadSavedNews();
+                    alert('Noticia actualizada exitosamente');
+                };
+                reader.readAsDataURL(newImageFile);
+            } else {
+                adminNewsManager.updateNews(id, title, description, currentEditNewsImage);
+                closeEditNewsModal();
+                loadSavedNews();
+                alert('Noticia actualizada exitosamente');
+            }
+        });
+
+        // Close news modal when clicking outside
+        document.getElementById('editNewsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editNewsModal') {
+                closeEditNewsModal();
+            }
+        });
+
+        // Load projects and news on page load
         document.addEventListener('DOMContentLoaded', () => {
             loadSavedProjects();
+            loadSavedNews();
         });
     </script>
 </body>

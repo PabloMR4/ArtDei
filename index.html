@@ -133,7 +133,7 @@
     <section id="clientes" class="clients">
         <div class="container">
             <div class="section-header">
-                <h2>Clientes</h2>
+                <h2>Clientes Satisfechos</h2>
                 <div class="divider">✦</div>
                 <p>Confianza y colaboración</p>
             </div>
@@ -180,6 +180,20 @@
         </div>
     </section>
 
+    <!-- News Section -->
+    <section id="noticias" class="news">
+        <div class="container">
+            <div class="section-header">
+                <h2>Noticias</h2>
+                <div class="divider">✦</div>
+                <p>Novedades y actualizaciones</p>
+            </div>
+            <div class="news-grid" id="newsGrid">
+                <!-- Las noticias se cargan dinámicamente desde el panel de administración -->
+            </div>
+        </div>
+    </section>
+
     <!-- Contact Section -->
     <section id="contacto" class="contact">
         <div class="container">
@@ -204,6 +218,21 @@
             </div>
         </div>
     </section>
+
+    <!-- News Modal -->
+    <div id="newsModal" class="news-modal">
+        <div class="news-modal-content">
+            <div class="news-modal-header">
+                <img id="newsModalImage" src="" alt="">
+                <button class="news-modal-close" onclick="closeNewsModal()">×</button>
+            </div>
+            <div class="news-modal-body">
+                <div id="newsModalDate" class="news-modal-date"></div>
+                <h2 id="newsModalTitle"></h2>
+                <p id="newsModalDescription"></p>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">

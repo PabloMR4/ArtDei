@@ -205,9 +205,14 @@ class ProjectManager {
 const projectManager = new ProjectManager();
 
 // Render saved projects on load
-window.addEventListener('DOMContentLoaded', () => {
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        projectManager.renderAllProjects();
+    });
+} else {
+    // DOM already loaded
     projectManager.renderAllProjects();
-});
+}
 
 // Add Project Form Handler
 const addProjectForm = document.getElementById('addProjectForm');
@@ -289,3 +294,123 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ==================== NEWS MANAGER FOR LANDING PAGE ====================
+
+class NewsManager {
+    constructor() {
+        this.news = this.loadNews();
+    }
+
+    loadNews() {
+        const stored = localStorage.getItem('artdei_news');
+        return stored ? JSON.parse(stored) : [];
+    }
+
+    renderNews(newsItem) {
+        const newsGrid = document.getElementById('newsGrid');
+        if (!newsGrid) return;
+
+        const card = document.createElement('div');
+        card.className = 'news-card';
+        card.setAttribute('data-news-id', newsItem.id);
+
+        const newsDate = new Date(newsItem.createdAt).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        card.innerHTML = `
+            <div class="news-image">
+                <img src="${newsItem.image}" alt="${newsItem.title}">
+            </div>
+            <div class="news-content">
+                <div class="news-date">${newsDate}</div>
+                <h3>${newsItem.title}</h3>
+                <p>${newsItem.description}</p>
+            </div>
+        `;
+
+        // Add click event to open modal
+        card.addEventListener('click', () => {
+            openNewsModal(newsItem);
+        });
+
+        newsGrid.appendChild(card);
+        card.style.animation = 'fadeInUp 0.5s ease';
+    }
+
+    renderAllNews() {
+        const newsGrid = document.getElementById('newsGrid');
+        if (!newsGrid) return;
+
+        newsGrid.innerHTML = '';
+
+        if (this.news.length === 0) {
+            newsGrid.innerHTML = '<p style="text-align: center; color: var(--stone-gray); padding: var(--spacing-lg); grid-column: 1 / -1;">No hay noticias disponibles aún.</p>';
+            return;
+        }
+
+        // Sort news by date (newest first)
+        const sortedNews = [...this.news].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        sortedNews.forEach(newsItem => this.renderNews(newsItem));
+    }
+}
+
+// Initialize News Manager
+const newsManager = new NewsManager();
+
+// News Modal Functions
+function openNewsModal(newsItem) {
+    const modal = document.getElementById('newsModal');
+    const modalImage = document.getElementById('newsModalImage');
+    const modalDate = document.getElementById('newsModalDate');
+    const modalTitle = document.getElementById('newsModalTitle');
+    const modalDescription = document.getElementById('newsModalDescription');
+
+    const newsDate = new Date(newsItem.createdAt).toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+
+    modalImage.src = newsItem.image;
+    modalImage.alt = newsItem.title;
+    modalDate.textContent = newsDate;
+    modalTitle.textContent = newsItem.title;
+    modalDescription.textContent = newsItem.description;
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeNewsModal() {
+    const modal = document.getElementById('newsModal');
+    modal.classList.remove('active');
+    document.body.style.overflow = ''; // Restore scrolling
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', (e) => {
+    const modal = document.getElementById('newsModal');
+    if (e.target === modal) {
+        closeNewsModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeNewsModal();
+    }
+});
+
+// Render news on page load (separate listener to avoid conflicts)
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        newsManager.renderAllNews();
+    });
+} else {
+    newsManager.renderAllNews();
+}
